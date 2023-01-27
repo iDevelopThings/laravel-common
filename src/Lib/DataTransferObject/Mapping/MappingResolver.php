@@ -4,6 +4,7 @@ namespace IDT\LaravelCommon\Lib\DataTransferObject\Mapping;
 
 
 use App;
+use Arr;
 use BackedEnum;
 use Exception;
 use IDT\LaravelCommon\Lib\DataTransferObject\DataTransferObject;
@@ -125,7 +126,7 @@ class MappingResolver
 
             if (!$resolverFqn && config('laravel-common.dto.allowResolvingFromContainer', true)) {
                 if (class_exists($type?->getName()) || interface_exists($type?->getName())) {
-                    $result = App::resolveWith($type->getName(), $value);
+                    $result = App::resolveWith($type->getName(), [$value]);
                     if ($result) {
                         return MappingResult::success($result);
                     }
