@@ -47,16 +47,23 @@ class MappingResolver
             'array'  => ArrayableMapper::class,
         ];
 
-        $this->testableResolvers = array_merge($this->builtInResolvers, [
+        $this->testableResolvers = array_merge(
+            $this->builtInResolvers,
+            ($config['testable'] ?? []),
+        );
 
-        ]);
 
         $this->resolvers = [
-            Collection::class         => $config[Collection::class] ?? ArrayableMapper::class,
-            DataTransferObject::class => $config[DataTransferObject::class] ?? DtoMapper::class,
-            BackedEnum::class         => $config[BackedEnum::class] ?? BackedEnumMapper::class,
-            Model::class              => $config[Model::class] ?? ModelMapper::class,
+            Collection::class         => ArrayableMapper::class,
+            DataTransferObject::class => DtoMapper::class,
+            BackedEnum::class         => BackedEnumMapper::class,
+            Model::class              => ModelMapper::class,
         ];
+
+        $this->resolvers = array_merge(
+            $this->resolvers,
+            ($config['resolvers'] ?? []),
+        );
     }
 
     /**

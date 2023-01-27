@@ -10,7 +10,7 @@ class DtoServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(MappingResolver::class, function ($app) {
-            return new MappingResolver(config('common.dto.mappers'));
+            return new MappingResolver(config('laravel-common.dto.mappers', []));
         });
     }
 
