@@ -3,6 +3,7 @@
 namespace IDT\LaravelCommon\Lib\DataTransferObject\Mapping;
 
 
+use App;
 use BackedEnum;
 use Exception;
 use IDT\LaravelCommon\Lib\DataTransferObject\DataTransferObject;
@@ -118,14 +119,22 @@ class MappingResolver
         ?Request $request,
         mixed $value
     ): MappingResult {
-        /** @var class-string<DtoMappingHandler> $resolverFqn */
-        $resolverFqn = $this->findFqnMapper($type, $property);
-
-        if (!$resolverFqn) {
-            return MappingResult::failure(new Exception('No resolver found for type ' . $type->getName()));
-        }
-
         try {
+            /** @var class-string<DtoMappingHandler> $resolverFqn */
+            $resolverFqn = $this->findFqnMapper($type, $property);
+
+            if (!$resolverFqn && config('laravel-common.dto.allowResolvingFromContainer', true)) {
+                if (class_exists($type?->getName()) || interface_exists($type?->getName())) {
+                    $result = App::resolveWith($type->getName(), $value);
+                    if ($result) {
+                        return MappingResult::success($result);
+                    }
+                }
+            }
+
+            if (!$resolverFqn) {
+                return MappingResult::failure(new Exception('No resolver found for type ' . $type->getName()));
+            }
 
             $resolver = new $resolverFqn(
                 dto: $dto,
