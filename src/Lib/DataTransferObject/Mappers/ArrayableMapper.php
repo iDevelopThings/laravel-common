@@ -24,56 +24,51 @@ class ArrayableMapper extends DtoMappingHandler implements TestableMapper
         if (!in_array($this->type->getName(), ['array', 'Illuminate\Support\Collection'])) {
             return $this->failure(new Exception('ArrayableMapper can only map to array'));
         }
+
         $type  = ReflectionUtil::getType($this->property);
         $annot = $type->resolveType();
 
         /** @var MappingResolver $resolver */
         $mappingResolver = resolve(MappingResolver::class);
 
-        /** @var DtoMappingHandler $resolver */
-        $resolver = $this->tryGetResolver($annot, $mappingResolver);
+        if ($annot) {
+            /** @var DtoMappingHandler $resolver */
+            $resolver = $this->tryGetResolver($annot, $mappingResolver);
 
-        if ($resolver) {
-            $mapped = collect($data)
-                ->map(function ($item) use ($resolver) {
-                    $result = $resolver->handle($item);
-                    if ($result->didResolve()) {
-                        return $result->getValue();
-                    }
+            if ($resolver) {
+                $mapped = collect($data)
+                    ->map(function ($item) use ($resolver) {
+                        $result = $resolver->handle($item);
+                        if ($result->didResolve()) {
+                            return $result->getValue();
+                        }
 
-                    return null;
-                })
-                ->filter(fn($item) => !is_null($item));
+                        return null;
+                    })
+                    ->filter(fn($item) => !is_null($item));
 
-            if ($annot->fqn === '\Illuminate\Support\Collection') {
-                return $this->success($mapped->values());
+                if ($annot->fqn === '\Illuminate\Support\Collection') {
+                    return $this->success($mapped->values());
+                }
+
+                return $this->success($mapped->all());
             }
 
-            return $this->success($mapped->all());
+            if ($annot->isArrayType()) {
+                return $this->success(
+                    Arr::map($data, fn($item) => $mappingResolver->tryMapBuiltinValue($annot->typeName, $item))
+                );
+            }
         }
-
-        if ($annot->isArrayType()) {
-
-            return $this->success(
-                Arr::map($data, fn($item) => $mappingResolver->tryMapBuiltinValue($annot->typeName, $item))
-            );
-        }
-
 
         return $this->success((array)$data);
     }
 
     public static function canMap(ReflectionProperty $property, ReflectionNamedType|ReflectionClass $type): array
     {
-        // $propTypes = collect()
-        // ->filter(fn ($type) => class_exists($type))
-
         if ($type->getName() === 'array') {
             return [true, null];
         }
-
-        $types = ReflectionUtil::getPropertyTypes($property);
-
 
         return [false, null];
     }
