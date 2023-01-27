@@ -12,11 +12,6 @@ class DtoMapper extends DtoMappingHandler
 {
     public function handle(mixed $data): MappingResult
     {
-        $request = Request::createFrom($this->request);
-        if ($data) {
-            $request->replace($data);
-        }
-
         if (empty($data) && $this->type->allowsNull()) {
             return $this->resolved(null);
         }
@@ -24,7 +19,7 @@ class DtoMapper extends DtoMappingHandler
         $name = $this->type->getName();
 
         return $this->resolved(
-            MappingManager::for($name)->fillWithRequestData($request, false)
+            MappingManager::for($name)->fillWithAttributes($data, false)
         );
     }
 }

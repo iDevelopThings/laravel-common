@@ -87,7 +87,7 @@ class ArrayableMapper extends DtoMappingHandler implements TestableMapper
                 $this->mappingManager,
                 $newType,
                 $this->property,
-                $this->request,
+                $this->requestData,
             );
         }
 

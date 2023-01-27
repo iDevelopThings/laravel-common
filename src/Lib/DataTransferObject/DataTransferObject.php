@@ -28,18 +28,19 @@ abstract class DataTransferObject implements Castable, Arrayable, JsonSerializab
         $this->fill($attributes, $partial);
     }
 
-    /**
-     * @param array $attributes
-     * @param bool  $partial
-     *
-     * @return $this
-     * @throws InvalidArgumentException
-     */
     public function fill(array $attributes, bool $partial = true): static
     {
-        $mapping = MappingManager::for($this);
+        if (empty($attributes)) {
+            return $this;
+        }
 
-        $missingAttributes = [];
+        return MappingManager::for($this)->fillWithAttributes(
+            $attributes,
+            true,
+            $this
+        );
+
+        /*$missingAttributes = [];
 
         foreach ($mapping->properties as $property) {
             if (!array_key_exists($property->getName(), $attributes)) {
@@ -61,9 +62,9 @@ abstract class DataTransferObject implements Castable, Arrayable, JsonSerializab
         if (!$partial && count($missingAttributes)) {
             $missing = implode(', ', $missingAttributes);
             throw new InvalidArgumentException('The payload for ' . static::class . ' is missing the following attributes: ' . $missing);
-        }
+        }*/
 
-        return $this;
+        // return $this;
     }
 
     public function getValidator()

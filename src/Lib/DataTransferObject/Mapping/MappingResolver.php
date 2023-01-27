@@ -24,6 +24,7 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 use Throwable;
+use UnitEnum;
 
 class MappingResolver
 {
@@ -59,6 +60,7 @@ class MappingResolver
             Collection::class         => ArrayableMapper::class,
             DataTransferObject::class => DtoMapper::class,
             BackedEnum::class         => BackedEnumMapper::class,
+            UnitEnum::class           => BackedEnumMapper::class,
             Model::class              => ModelMapper::class,
         ];
 
@@ -117,7 +119,7 @@ class MappingResolver
         MappingManager $mappingManager,
         ReflectionNamedType|ReflectionClass $type,
         ReflectionProperty $property,
-        ?Request $request,
+        array $requestData,
         mixed $value
     ): MappingResult {
         try {
@@ -142,7 +144,7 @@ class MappingResolver
                 mappingManager: $mappingManager,
                 type: $type,
                 property: $property,
-                request: $request,
+                requestData: $requestData,
             );
 
             return $resolver->handle($value);

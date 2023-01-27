@@ -16,7 +16,7 @@ abstract class DtoMappingHandler
         protected MappingManager $mappingManager,
         protected ReflectionNamedType|ReflectionClass $type,
         protected ReflectionProperty $property,
-        protected ?Request $request = null,
+        protected array $requestData,
     ) {
 
     }

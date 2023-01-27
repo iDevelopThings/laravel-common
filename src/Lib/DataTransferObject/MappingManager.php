@@ -69,11 +69,15 @@ class MappingManager
      */
     public function fillWithRequestData(Request $request, bool $isRootDto = true, mixed $instance = null)
     {
+        return $this->fillWithAttributes($request->all(), $isRootDto, $instance);
+    }
+
+    public function fillWithAttributes(array $data, bool $isRootDto = true, mixed $instance = null)
+    {
         $resolver = resolve(MappingResolver::class);
 
         /** @var DataTransferObject $instance */
         $instance = $instance ?? $this->createNewInstance();
-        $data     = $request->all();
 
         $this->reflectionClass->getParentClass()->getProperty('_rawData')->setValue($instance, $data);
 
@@ -90,12 +94,6 @@ class MappingManager
             $propertyValue        = null;
             $requestPropertyValue = $data[$property->getName()] ?? null;
 
-            // $propertyType = $property->getType();
-            // if (!$propertyType) {
-            //     $property->setValue($this, $requestPropertyValue);
-            //     continue;
-            // }
-
             $types = array_filter(ReflectionUtil::getPropertyTypes($property));
             if (empty($types)) {
                 $rProp = ReflectionUtil::getType($property);
@@ -109,7 +107,7 @@ class MappingManager
                 $result = $this->mapValue(
                     $resolver,
                     $instance,
-                    $request,
+                    $data,
                     $type,
                     $property,
                     $requestPropertyValue
@@ -139,13 +137,13 @@ class MappingManager
     public function mapValue(
         MappingResolver $resolver,
         DataTransferObject $dto,
-        ?Request $request,
+        array $requestData,
         ReflectionNamedType|ReflectionClass $type,
         ReflectionProperty $property,
         mixed $value
     ): MappingResult {
         try {
-            return $resolver->runFqnMapper($dto, $this, $type, $property, $request, $value);
+            return $resolver->runFqnMapper($dto, $this, $type, $property, $requestData, $value);
         } catch (Throwable $ex) {
             return MappingResult::failure($ex);
         }
