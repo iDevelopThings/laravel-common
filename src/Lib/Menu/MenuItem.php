@@ -1,159 +1,165 @@
 <?php
 
 namespace IDT\LaravelCommon\Lib\Menu;
+
+use IDT\LaravelCommon\Lib\Utils\Attributes;
 use Illuminate\Contracts\Support\Arrayable;
 
-class MenuItem implements Arrayable, Item
+/**
+ * @extends Attributes<MenuItem>
+ */
+class MenuItem extends Attributes implements Arrayable, Item
 {
 
-	public ?string $title = null;
+    public ?string $title = null;
 
-	public ?RouteInfo $route = null;
+    public ?RouteInfo $route = null;
 
-	public bool $enabled = false;
+    public bool $enabled = false;
 
-	public bool $active   = false;
-	public bool $expanded = false;
+    public bool $active   = false;
+    public bool $expanded = false;
 
-	public ?string $icon = null;
+    public ?string $icon = null;
 
-	public ?MenuItem $parent = null;
-	/**
-	 * @var Item[] $children
-	 */
-	public array $children = [];
+    public ?MenuItem $parent = null;
+    /**
+     * @var Item[] $children
+     */
+    public array $children = [];
 
-	public function __construct(string $title, bool $enabled = true, Item $parent = null)
-	{
-		$this->title   = $title;
-		$this->enabled = $enabled;
-		$this->parent  = $parent;
-	}
 
-	public function route(string $name, array $parameters = []): Item
-	{
-		$this->route = new RouteInfo([
-			'name'       => $name,
-			'parameters' => $parameters,
-		]);
+    public function __construct(string $title, bool $enabled = true, Item $parent = null)
+    {
+        $this->title   = $title;
+        $this->enabled = $enabled;
+        $this->parent  = $parent;
+    }
 
-		return $this;
-	}
+    public function route(string $name, array $parameters = []): Item
+    {
+        $this->route = new RouteInfo([
+            'name'       => $name,
+            'parameters' => $parameters,
+        ]);
 
-	public function isVisible(): bool
-	{
-		return $this->enabled;
-	}
+        return $this;
+    }
 
-	public function icon(?string $icon = null): Item
-	{
-		$this->icon = $icon;
+    public function isVisible(): bool
+    {
+        return $this->enabled;
+    }
 
-		return $this;
-	}
+    public function icon(?string $icon = null): Item
+    {
+        $this->icon = $icon;
 
-	public function toArray(): array
-	{
-		$data = [
-			'title'    => $this->title,
-			'route'    => $this->route?->toArray(),
-			'enabled'  => $this->enabled,
-			'active'   => $this->active,
-			'expanded' => $this->expanded,
-			'children' => array_map(fn(Item $item) => $item->toArray(), $this->children),
-		];
+        return $this;
+    }
 
-		if ($this->icon) {
-			$data['icon'] = $this->icon;
-		}
+    public function toArray(): array
+    {
+        $data = array_merge($this->getAttributes(), [
+            'title'    => $this->title,
+            'route'    => $this->route?->toArray(),
+            'enabled'  => $this->enabled,
+            'active'   => $this->active,
+            'expanded' => $this->expanded,
+            'children' => array_map(fn(Item $item) => $item->toArray(), $this->children),
+        ]);
 
-		return $data;
-	}
+        if ($this->icon) {
+            $data['icon'] = $this->icon;
+        }
 
-	public function build(Menu $menu): Item
-	{
-		if ($this->route && $menu->currentRoute) {
-			$this->active = $this->compareRoutePath($menu->currentRoute->getName(), $this->route->name);
+        return $data;
+    }
 
-			if ($this->active && $this->parent instanceof MenuGroup) {
-				$this->parent->active   = true;
-				$this->parent->expanded = true;
-			}
+    public function build(Menu $menu): Item
+    {
+        if ($this->route && $menu->currentRoute) {
+            $this->active = $this->compareRoutePath($menu->currentRoute->getName(), $this->route->name);
 
-			if (!empty($this->children)) {
-				foreach ($this->children as $child) {
-					$child->build($menu);
-				}
-			}
-		}
+            if ($this->active && $this->parent instanceof MenuGroup) {
+                $this->parent->active   = true;
+                $this->parent->expanded = true;
+            }
 
-		return $this;
-	}
+            if (!empty($this->children)) {
+                foreach ($this->children as $child) {
+                    $child->build($menu);
+                }
+            }
+        }
 
-	public function isGroup(): bool
-	{
-		return $this instanceof MenuGroup || !empty($this->children);
-	}
+        return $this;
+    }
 
-	public function getRoute(): ?string
-	{
-		if (!$this->route) {
-			return null;
-		}
+    public function isGroup(): bool
+    {
+        return $this instanceof MenuGroup || !empty($this->children);
+    }
 
-		return route($this->route->name, $this->route->parameters);
-	}
+    public function getRoute(): ?string
+    {
+        if (!$this->route) {
+            return null;
+        }
 
-	public function isActive(): bool
-	{
-		return $this->active;
-	}
+        return route($this->route->name, $this->route->parameters);
+    }
 
-	/** @return Item[] */
-	public function getChildren(): array
-	{
-		return $this->children;
-	}
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
 
-	public function enabled(bool $enabled = true): Item
-	{
-		$this->enabled = $enabled;
+    /** @return Item[] */
+    public function getChildren(): array
+    {
+        return $this->children;
+    }
 
-		return $this;
-	}
+    public function enabled(bool $enabled = true): Item
+    {
+        $this->enabled = $enabled;
 
-	public function visible(bool $visible = true): Item
-	{
-		$this->enabled = $visible;
+        return $this;
+    }
 
-		return $this;
-	}
+    public function visible(bool $visible = true): Item
+    {
+        $this->enabled = $visible;
 
-	public function getDepth(): int
-	{
-		if (!$this->route?->name) {
-			return 0;
-		}
+        return $this;
+    }
 
-		return count(explode('.', $this->route->name));
-	}
+    public function getDepth(): int
+    {
+        if (!$this->route?->name) {
+            return 0;
+        }
 
-	private function compareRoutePath($activeRouteName, ?string $name)
-	{
-		if (!$name) {
-			return false;
-		}
+        return count(explode('.', $this->route->name));
+    }
 
-		if ($activeRouteName === $name) {
-			return true;
-		}
+    private function compareRoutePath($activeRouteName, ?string $name)
+    {
+        if (!$name) {
+            return false;
+        }
 
-		$activeRouteName = explode('.', $activeRouteName);
+        if ($activeRouteName === $name) {
+            return true;
+        }
 
-		$activeRouteName = array_slice($activeRouteName, 0, count(explode('.', $name)));
+        $activeRouteName = explode('.', $activeRouteName);
 
-		$activeRouteName = implode('.', $activeRouteName);
+        $activeRouteName = array_slice($activeRouteName, 0, count(explode('.', $name)));
 
-		return $activeRouteName === $name;
-	}
+        $activeRouteName = implode('.', $activeRouteName);
+
+        return $activeRouteName === $name;
+    }
 }

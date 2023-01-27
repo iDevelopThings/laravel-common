@@ -1,12 +1,17 @@
 <?php
 
-namespace IDT\LaravelCommon\Lib\Menu;
+namespace IDT\LaravelCommon\Tests\Fixtures;
+
+use IDT\LaravelCommon\Lib\Menu\BaseMenu;
+use IDT\LaravelCommon\Lib\Menu\MenuGroup;
 
 class ExampleMenu extends BaseMenu
 {
     public function configure(): void
     {
-        $this->add('Dashboard', "app.dashboard")->icon('Home-o');
+        $this->add('Dashboard', "app.dashboard")->icon('Home-o')
+            ->set('data-test', 'dashboard')
+            ->setAttributes(['indented' => true]);
 
         $this->group('Customers', function (MenuGroup $menu) {
             $menu->add('All Customers', 'app.customers.index');

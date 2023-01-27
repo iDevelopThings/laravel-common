@@ -1,28 +1,35 @@
 <?php
 
 namespace IDT\LaravelCommon\Lib\Menu;
+
+use IDT\LaravelCommon\Lib\Utils\Attributes;
+
+/**
+ * @extends Attributes<Item>
+ * @mixin Attributes<Item>
+ */
 interface Item
 {
-	public function route(string $name, array $parameters = []): Item;
+    public function route(string $name, array $parameters = []): Item;
 
-	public function icon(?string $icon = null): Item;
+    public function icon(?string $icon = null): Item;
 
-	public function isVisible(): bool;
+    public function isVisible(): bool;
 
-	public function toArray(): array;
+    public function toArray(): array;
 
-	public function build(Menu $menu): Item;
+    public function build(Menu $menu): Item;
 
-	public function isGroup(): bool;
+    public function isGroup(): bool;
 
-	public function getRoute(): ?string;
+    public function getRoute(): ?string;
 
-	public function isActive(): bool;
+    public function isActive(): bool;
 
-	/** @return Item[] */
-	public function getChildren(): array;
+    /** @return Item[] */
+    public function getChildren(): array;
 
-	public function enabled(bool $enabled = true): Item;
+    public function enabled(bool $enabled = true): Item;
 
-	public function visible(bool $visible = true): Item;
+    public function visible(bool $visible = true): Item;
 }

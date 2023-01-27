@@ -2,44 +2,48 @@
 
 namespace IDT\LaravelCommon\Lib\Menu;
 
+use IDT\LaravelCommon\Lib\Utils\Attributes;
+
+/**
+ * @extends Attributes<MenuGroup>
+ */
 class MenuGroup extends MenuItem implements Item
 {
-	public MenuGroup|MenuItem|null $parent = null;
+    public MenuGroup|MenuItem|null $parent = null;
 
-	/**
-	 * @var (MenuItem|MenuGroup)[] $children
-	 */
-	public array $children = [];
+    /**
+     * @var (MenuItem|MenuGroup)[] $children
+     */
+    public array $children = [];
 
-	public function __construct(string $title, bool $enabled = true, Item $parent = null)
-	{
-		parent::__construct($title, $enabled, $parent);
-	}
+    public function __construct(string $title, bool $enabled = true, Item $parent = null)
+    {
+        parent::__construct($title, $enabled, $parent);
+    }
 
-	public function add(string $title, ?string $routeName = null, array $parameters = []): Item
-	{
-		$item = new MenuItem($title, true, $this);
+    public function add(string $title, ?string $routeName = null, array $parameters = []): Item
+    {
+        $item = new MenuItem($title, true, $this);
 
-		if ($routeName) {
-			$item->route($routeName, $parameters);
-		}
+        if ($routeName) {
+            $item->route($routeName, $parameters);
+        }
 
-		$this->children[] = $item;
+        $this->children[] = $item;
 
-		return $item;
-	}
+        return $item;
+    }
 
-	public function group(string $title, callable $callback): Item
-	{
-		$item = new MenuGroup($title, true, $this);
+    public function group(string $title, callable $callback): Item
+    {
+        $item = new MenuGroup($title, true, $this);
 
-		$this->children[] = $item;
+        $this->children[] = $item;
 
-		$callback($item);
+        $callback($item);
 
-		return $item;
-	}
-
+        return $item;
+    }
 
 
 }

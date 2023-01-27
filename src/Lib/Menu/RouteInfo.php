@@ -1,7 +1,8 @@
 <?php
 
 namespace IDT\LaravelCommon\Lib\Menu;
-use App\Support\DataTransferObject;
+
+use IDT\LaravelCommon\Lib\DataTransferObject\DataTransferObject;
 
 class RouteInfo extends DataTransferObject
 {
