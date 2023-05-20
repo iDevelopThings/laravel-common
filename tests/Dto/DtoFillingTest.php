@@ -70,7 +70,6 @@ it('can use the fill method to fill the dto', function () {
         public ?SomeNormalEnum $someNormalEnum = null;
         public ?SomeBackedEnum $someBackedEnum = null;
     };
-
     $dto->fill([
         'intValue'       => 1,
         'floatValue'     => 1.1,
